@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roue Lumière - METAMORPHOO</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --vert-principal: #27ae60;
+            --vert-fonce: #1e8449;
+            --lumiere-or: #f39c12;
+            --jaune-clair: #f1c40f;
+            --fond-clair: #f4f9f4;
+            --texte-sombre: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--fond-clair);
+            color: var(--texte-sombre);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+            border-bottom: 3px solid var(--vert-principal);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 900;
+            font-size: 1.2rem;
+            color: var(--vert-fonce);
+            letter-spacing: 1px;
+        }
+
+        .logo-img { height: 40px; width: auto; border-radius: 5px; }
+
+        /* Style pour le texte défilant */
+        .defilement-container {
+            width: 100%;
+            background-color: var(--vert-fonce);
+            color: white;
+            padding: 8px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+            font-weight: 500;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .defilement-container marquee {
+            color: var(--jaune-clair);
+            font-weight: bold;
+        }
+
+        .titre-app { text-align: center; margin: 20px 0; color: var(--vert-fonce); }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            max-width: 1200px;
+            width: 95%;
+            margin-bottom: 40px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            width: 100%;
+            gap: 30px;
+        }
+
+        .panels-wrapper {
+            display: flex;
+            flex: 1.5;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .eval-panel {
+            flex: 1;
+            min-width: 280px;
+            background: #fafdfa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0ebe0;
+        }
+
+        .eval-panel.panel-1 { border-top: 5px solid var(--vert-principal); }
+        .eval-panel.panel-2 { border-top: 5px solid var(--lumiere-or); }
+
+        .legend-input {
+            width: 100%;
+            padding: 10px 5px;
+            margin-bottom: 20px;
+            background-color: transparent;
+            border: none;
+            border-bottom: 2px dotted #7f8c8d;
+            font-weight: bold;
+            font-size: 0.95rem;
+            text-align: center;
+            box-sizing: border-box;
+            transition: border-bottom-color 0.3s;
+        }
+        
+        .legend-input::placeholder {
+            font-weight: normal;
+            font-style: italic;
+            color: #95a5a6;
+        }
+
+        .legend-input:focus {
+            outline: none;
+            border-bottom: 2px solid;
+        }
+        
+        .panel-1 .legend-input { color: var(--vert-fonce); }
+        .panel-1 .legend-input:focus { border-bottom-color: var(--vert-principal); }
+        
+        .panel-2 .legend-input { color: #d35400; }
+        .panel-2 .legend-input:focus { border-bottom-color: var(--lumiere-or); }
+
+        .control-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+        }
+
+        .control-group label { width: 50%; font-weight: 500; }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 50%;
+        }
+
+        .panel-1 input[type="range"] { accent-color: var(--vert-principal); }
+        .panel-2 input[type="range"] { accent-color: var(--lumiere-or); }
+
+        .val-display { font-weight: bold; min-width: 15px; text-align: right; }
+
+        .chart-section {
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-container {
+            width: 100%;
+            max-width: 500px;
+            height: 450px;
+            position: relative;
+        }
+
+        .btn-capture {
+            margin-top: 20px;
+            background-color: var(--vert-fonce);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-capture:hover { background-color: var(--vert-principal); }
+
+        footer {
+            margin-top: auto;
+            width: 100%;
+            background-color: var(--vert-fonce);
+            color: white;
+            text-align: center;
+            padding: 20px 10px;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+        }
+        .footer-contacts a { color: var(--jaune-clair); text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-container">
+            <img src="logo.jpg" alt="Logo METAMORPHOO" class="logo-img">
+        </div>
+        <div style="font-weight:bold; color: var(--vert-principal);">Projet HAPHAK & METAMORPHOO</div>
+    </header>
+
+    <!-- Bandeau défilant -->
+    <div class="defilement-container">
+        <marquee behavior="scroll" direction="left" scrollamount="5">
+            Metamorphoo: la transformation holistique pour le réveil authentique et durable dans les nations.
+        </marquee>
+    </div>
+
+    <div class="titre-app">
+        <h2 style="margin:0;">Évaluation de la Roue Lumière</h2>
+        <small style="font-size: 16px; color: #7f8c8d;">Modèle de Tearfund</small>
+    </div>
+
+    <div class="container">
+        <div class="main-content">
+            
+            <div class="panels-wrapper">
+                
+                <div class="eval-panel panel-1">
+                    <input type="text" class="legend-input" id="name1" oninput="updateLegend(0, this.value)" placeholder="... Écris la légende de ton évaluation ici ...">
+                    <div id="controls-1"></div>
+                </div>
+
+                <div class="eval-panel panel-2">
+                    <input type="text" class="legend-input" id="name2" oninput="updateLegend(1, this.value)" placeholder="... Écris la légende de ton évaluation ici ...">
+                    <div id="controls-2"></div>
+                </div>
+
+            </div>
+
+            <div class="chart-section">
+                <div class="chart-container">
+                    <canvas id="roueLumiere"></canvas>
+                </div>
+                <button class="btn-capture" onclick="telechargerImage()">
+                    📸 Sauvegarder le graphique (Photo)
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p style="margin: 0 0 10px 0;">copyright@metamorphoo2026</p>
+        <div class="footer-contacts">
+            <span>WhatsApp : <a href="https://wa.me/243853471468" target="_blank">+243 85 347 1468</a></span> | 
+            <span>Email : <a href="mailto:contactmetamorphoo@gmail.com">contactmetamorphoo@gmail.com</a></span>
+        </div>
+    </footer>
+
+    <script>
+        const categories = [
+            "Foi vivante",
+            "Bien-être émotionnel et mental",
+            "Santé physique",
+            "Capacité",
+            "Ressources et bien matériel",
+            "Protection de l'environnement",
+            "Participation et influence",
+            "Liens sociaux",
+            "Relations personnelles"
+        ];
+
+        let dataEval1 = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+        let dataEval2 = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+        function creerJauges(containerId, datasetIndex) {
+            const container = document.getElementById(containerId);
+            categories.forEach((cat, index) => {
+                const div = document.createElement('div');
+                div.className = 'control-group';
+                div.innerHTML = `
+                    <label>${cat}</label>
+                    <div class="slider-container">
+                        <input type="range" min="0" max="5" value="0" step="1" 
+                            oninput="updateChart(${datasetIndex}, ${index}, this.value)">
+                        <span class="val-display" id="val-${datasetIndex}-${index}">0</span>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        creerJauges('controls-1', 0);
+        creerJauges('controls-2', 1);
+
+        const fondBlancPlugin = {
+            id: 'fondBlanc',
+            beforeDraw: (chart) => {
+                const ctx = chart.ctx;
+                ctx.save();
+                ctx.globalCompositeOperation = 'destination-over';
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, chart.width, chart.height);
+                ctx.restore();
+            }
+        };
+
+        const ctx = document.getElementById('roueLumiere').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'radar',
+            plugins: [fondBlancPlugin],
+            data: {
+                labels: categories,
+                datasets: [
+                    {
+                        label: 'Évaluation 1',
+                        data: dataEval1,
+                        backgroundColor: 'rgba(39, 174, 96, 0.4)',
+                        borderColor: '#27ae60',
+                        pointBackgroundColor: '#27ae60',
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Évaluation 2',
+                        data: dataEval2,
+                        backgroundColor: 'rgba(243, 156, 18, 0.4)',
+                        borderColor: '#f39c12',
+                        pointBackgroundColor: '#f39c12',
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                        suggestedMin: 0,
+                        suggestedMax: 5,
+                        ticks: { stepSize: 1, backdropColor: 'transparent', color: '#7f8c8d', font: { weight: 'bold' } },
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                        pointLabels: { font: { size: 10, family: 'Segoe UI' }, color: '#2c3e50' }
+                    }
+                },
+                plugins: {
+                    legend: { 
+                        display: true, 
+                        position: 'top',
+                        labels: { font: { family: 'Segoe UI', weight: 'bold' } }
+                    }
+                }
+            }
+        });
+
+        function updateChart(datasetIndex, dataIndex, val) {
+            document.getElementById(`val-${datasetIndex}-${dataIndex}`).innerText = val;
+            chart.data.datasets[datasetIndex].data[dataIndex] = parseInt(val);
+            chart.update();
+        }
+
+        function updateLegend(datasetIndex, text) {
+            chart.data.datasets[datasetIndex].label = text || `Évaluation ${datasetIndex + 1}`;
+            chart.update();
+        }
+
+        function telechargerImage() {
+            const nomFichier = 'Roue-Lumiere-' + new Date().getTime() + '.png';
+            const lien = document.createElement('a');
+            lien.download = nomFichier;
+            lien.href = chart.toBase64Image('image/png', 1);
+            lien.click();
+        }
+    </script>
+
+</body>
+</html>
