@@ -41,7 +41,7 @@
         .logo-container {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
             font-weight: 900;
             font-size: 1.2rem;
             color: var(--vert-fonce);
@@ -50,7 +50,6 @@
 
         .logo-img { height: 40px; width: auto; border-radius: 5px; }
 
-        /* Style pour le texte défilant */
         .defilement-container {
             width: 100%;
             background-color: var(--vert-fonce);
@@ -101,7 +100,7 @@
 
         .eval-panel {
             flex: 1;
-            min-width: 280px;
+            min-width: 320px;
             background: #fafdfa;
             padding: 15px;
             border-radius: 8px;
@@ -125,20 +124,11 @@
             transition: border-bottom-color 0.3s;
         }
         
-        .legend-input::placeholder {
-            font-weight: normal;
-            font-style: italic;
-            color: #95a5a6;
-        }
-
-        .legend-input:focus {
-            outline: none;
-            border-bottom: 2px solid;
-        }
+        .legend-input::placeholder { font-weight: normal; font-style: italic; color: #95a5a6; }
+        .legend-input:focus { outline: none; border-bottom: 2px solid; }
         
         .panel-1 .legend-input { color: var(--vert-fonce); }
         .panel-1 .legend-input:focus { border-bottom-color: var(--vert-principal); }
-        
         .panel-2 .legend-input { color: #d35400; }
         .panel-2 .legend-input:focus { border-bottom-color: var(--lumiere-or); }
 
@@ -146,23 +136,36 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             font-size: 0.85rem;
         }
 
-        .control-group label { width: 50%; font-weight: 500; }
+        .control-group label { width: 45%; font-weight: 500; }
         
         .slider-container {
             display: flex;
             align-items: center;
-            gap: 10px;
-            width: 50%;
+            gap: 8px;
+            width: 55%;
+            justify-content: flex-end;
         }
 
+        input[type="range"] { flex: 1; min-width: 60px; }
         .panel-1 input[type="range"] { accent-color: var(--vert-principal); }
         .panel-2 input[type="range"] { accent-color: var(--lumiere-or); }
 
-        .val-display { font-weight: bold; min-width: 15px; text-align: right; }
+        .num-input {
+            width: 45px;
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: right;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: var(--texte-sombre);
+        }
+
+        .val-display { font-weight: bold; color: #7f8c8d; font-size: 0.85rem; white-space: nowrap; }
 
         .chart-section {
             flex: 1;
@@ -210,18 +213,25 @@
             box-sizing: border-box;
         }
         .footer-contacts a { color: var(--jaune-clair); text-decoration: none; font-weight: bold; }
+        
+        /* Ajustement responsive pour mobile */
+        @media (max-width: 600px) {
+            header { flex-direction: column; gap: 15px; }
+            .logo-container { justify-content: center; }
+        }
     </style>
 </head>
 <body>
 
     <header>
         <div class="logo-container">
+            <!-- Ajout des deux logos ici -->
             <img src="logo.jpg" alt="Logo METAMORPHOO" class="logo-img">
+            <img src="logo2.jpg" alt="Logo HAPHAK" class="logo-img">
         </div>
-        <div style="font-weight:bold; color: var(--vert-principal);">Projet HAPHAK & METAMORPHOO</div>
+        <div style="font-weight:bold; color: var(--vert-principal); text-align: center;">Projet HAPHAK & METAMORPHOO</div>
     </header>
 
-    <!-- Bandeau défilant -->
     <div class="defilement-container">
         <marquee behavior="scroll" direction="left" scrollamount="5">
             Metamorphoo: la transformation holistique pour le réveil authentique et durable dans les nations.
@@ -294,9 +304,13 @@
                 div.innerHTML = `
                     <label>${cat}</label>
                     <div class="slider-container">
-                        <input type="range" min="0" max="5" value="0" step="1" 
-                            oninput="updateChart(${datasetIndex}, ${index}, this.value)">
-                        <span class="val-display" id="val-${datasetIndex}-${index}">0</span>
+                        <input type="range" min="0" max="5" value="0" step="0.1" 
+                            id="slider-${datasetIndex}-${index}"
+                            oninput="updateChart(${datasetIndex}, ${index}, this.value, 'slider')">
+                        <input type="text" value="0" class="num-input" 
+                            id="num-${datasetIndex}-${index}"
+                            oninput="updateChart(${datasetIndex}, ${index}, this.value, 'text')">
+                        <span class="val-display">/ 5</span>
                     </div>
                 `;
                 container.appendChild(div);
@@ -357,18 +371,29 @@
                     }
                 },
                 plugins: {
-                    legend: { 
-                        display: true, 
-                        position: 'top',
-                        labels: { font: { family: 'Segoe UI', weight: 'bold' } }
-                    }
+                    legend: { display: true, position: 'top', labels: { font: { family: 'Segoe UI', weight: 'bold' } } }
                 }
             }
         });
 
-        function updateChart(datasetIndex, dataIndex, val) {
-            document.getElementById(`val-${datasetIndex}-${dataIndex}`).innerText = val;
-            chart.data.datasets[datasetIndex].data[dataIndex] = parseInt(val);
+        function updateChart(datasetIndex, dataIndex, val, source) {
+            let parsedVal = parseFloat(val.toString().replace(',', '.'));
+            
+            if (isNaN(parsedVal)) {
+                if (source === 'slider') parsedVal = 0;
+                else return;
+            }
+            
+            if (parsedVal < 0) parsedVal = 0;
+            if (parsedVal > 5) parsedVal = 5;
+
+            if (source === 'slider') {
+                document.getElementById(`num-${datasetIndex}-${dataIndex}`).value = parsedVal;
+            } else if (source === 'text') {
+                document.getElementById(`slider-${datasetIndex}-${dataIndex}`).value = parsedVal;
+            }
+
+            chart.data.datasets[datasetIndex].data[dataIndex] = parsedVal;
             chart.update();
         }
 
